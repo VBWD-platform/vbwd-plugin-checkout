@@ -103,7 +103,6 @@ def populate_checkout_cms() -> None:
         meta_title="Order Confirmation",
         meta_description="Your order has been received",
         robots="noindex,nofollow",
-        use_theme_switcher_styles=True,
     )
 
     if page_created:
