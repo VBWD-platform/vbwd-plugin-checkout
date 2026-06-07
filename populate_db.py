@@ -152,3 +152,11 @@ def populate_checkout_cms() -> None:
 
     db.session.commit()
     logger.info("[checkout] Checkout-confirmation CMS content populated")
+
+
+if __name__ == "__main__":
+    from vbwd.app import create_app
+
+    app = create_app()
+    with app.app_context():
+        populate_checkout_cms()
