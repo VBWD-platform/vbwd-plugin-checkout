@@ -55,6 +55,23 @@ def app():
         "RATELIMIT_STORAGE_URL": "memory://",
     }
     flask_app = create_app(test_config)
+
+    # Build the full schema exactly ONCE for the whole session, resetting the
+    # public schema first (clearing any table or ENUM type left by a prior
+    # crashed run or a sibling suite sharing this ``*_test`` DB). A per-test
+    # create_all()/drop_all() strands standalone PG ENUM types and races other
+    # suites on the shared catalog — see vbwd/testing/integration_db.py. Each
+    # test then isolates by TRUNCATE-ing data, not by dropping the schema.
+    with flask_app.app_context():
+        from vbwd.extensions import db as _db
+        from vbwd.testing.integration_db import reset_schema_and_create_all
+
+        # The checkout seeder writes CMS layouts/widgets/pages; importing the
+        # CMS models package registers them so create_all() builds their tables.
+        import plugins.cms.src.models  # noqa: F401
+
+        reset_schema_and_create_all(_db)
+
     yield flask_app
 
     with flask_app.app_context():
@@ -65,14 +82,13 @@ def app():
 
 @pytest.fixture
 def db(app):
+    """Isolate each test by TRUNCATE-ing data; the schema is built once per
+    session in the ``app`` fixture."""
     from vbwd.extensions import db as _db
 
     with app.app_context():
-        # The checkout seeder writes CMS layouts/widgets/pages; importing the
-        # CMS models package registers them so create_all() builds their tables.
-        import plugins.cms.src.models  # noqa: F401
+        from vbwd.testing.integration_db import truncate_all_tables
 
-        _db.create_all()
+        truncate_all_tables(_db)
         yield _db
         _db.session.remove()
-        _db.drop_all()
