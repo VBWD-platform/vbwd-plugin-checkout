@@ -8,14 +8,18 @@ fe-user `/checkout/confirmation` route loads, and is idempotent on a re-run.
 """
 from plugins.checkout.populate_db import populate_checkout_cms
 from plugins.cms.src.models.cms_layout import CmsLayout
-from plugins.cms.src.models.cms_page import CmsPage
+from plugins.cms.src.models.cms_post import CmsPost
 
 
 def test_populate_seeds_checkout_confirmation_page(db):
     populate_checkout_cms()
 
     layout = db.session.query(CmsLayout).filter_by(slug="checkout-confirmation").first()
-    page = db.session.query(CmsPage).filter_by(slug="checkout-confirmation").first()
+    page = (
+        db.session.query(CmsPost)
+        .filter_by(type="page", slug="checkout-confirmation")
+        .first()
+    )
     assert layout is not None
     assert page is not None
     assert page.layout_id == layout.id
@@ -26,7 +30,10 @@ def test_populate_is_idempotent(db):
     populate_checkout_cms()
 
     assert (
-        db.session.query(CmsPage).filter_by(slug="checkout-confirmation").count() == 1
+        db.session.query(CmsPost)
+        .filter_by(type="page", slug="checkout-confirmation")
+        .count()
+        == 1
     )
     assert (
         db.session.query(CmsLayout).filter_by(slug="checkout-confirmation").count() == 1

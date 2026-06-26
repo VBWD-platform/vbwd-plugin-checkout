@@ -27,7 +27,7 @@ def populate_checkout_cms() -> None:
         from plugins.cms.src.models.cms_layout import CmsLayout
         from plugins.cms.src.models.cms_widget import CmsWidget
         from plugins.cms.src.models.cms_layout_widget import CmsLayoutWidget
-        from plugins.cms.src.models.cms_page import CmsPage
+        from plugins.cms.src.models.cms_post import CmsPost
     except ImportError:
         logger.info("[checkout] CMS plugin not installed — skipping CMS content")
         return
@@ -93,12 +93,13 @@ def populate_checkout_cms() -> None:
         _assign_widget(layout, footer_nav, "footer", 0)
 
     page, page_created = _get_or_create(
-        CmsPage,
+        CmsPost,
         "checkout-confirmation",
-        name="Order Confirmation",
+        type="page",
+        title="Order Confirmation",
         language="en",
         content_json={"type": "doc", "content": []},
-        is_published=True,
+        status="published",
         layout_id=layout.id,
         meta_title="Order Confirmation",
         meta_description="Your order has been received",
@@ -107,8 +108,8 @@ def populate_checkout_cms() -> None:
 
     if page_created:
         try:
-            from plugins.cms.src.models.cms_page_content_block import (
-                CmsPageContentBlock,
+            from plugins.cms.src.models.cms_post_content_block import (
+                CmsPostContentBlock,
             )
 
             support_html = (
@@ -138,9 +139,9 @@ def populate_checkout_cms() -> None:
             )
 
             db.session.add(
-                CmsPageContentBlock(
+                CmsPostContentBlock(
                     id=uuid4(),
-                    page_id=page.id,
+                    post_id=page.id,
                     area_name="content-below",
                     content_html=support_html,
                     sort_order=0,
