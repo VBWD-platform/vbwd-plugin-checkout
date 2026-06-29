@@ -17,7 +17,7 @@ class CheckoutPlugin(BasePlugin):
     def metadata(self) -> PluginMetadata:
         return PluginMetadata(
             name="checkout",
-            version="26.6",
+            version="26.6.1",
             author="VBWD Team",
             description="Shared checkout-confirmation CMS flow seeder",
             dependencies=[],
