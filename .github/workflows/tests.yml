@@ -102,10 +102,13 @@ jobs:
             echo "No unit tests — skipping."
             exit 0
           fi
+          # pytest exits 5 when no tests are collected; checkout is
+          # integration-only, so treat "no unit tests" as a skip, not a failure.
           docker compose --profile test run --rm -T test \
             pytest $TESTS_DIR ${IGNORE:-} \
             -v --tb=short \
-            --junit-xml=/app/test-results/unit.xml
+            --junit-xml=/app/test-results/unit.xml \
+            || { code=$?; [ "$code" -eq 5 ] && echo "No unit tests collected — skipping." || exit "$code"; }
 
       # ── 7. Integration tests ───────────────────────────────────────────────
       - name: Run integration tests
