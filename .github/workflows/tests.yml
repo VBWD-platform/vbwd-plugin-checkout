@@ -26,6 +26,11 @@ jobs:
         with:
           path: vbwd-backend/plugins/checkout
 
+      # ── Clone peer plugins the tests import (checkout populate_db → cms) ──
+      - name: Clone peer dependencies
+        run: |
+          git clone --depth=1 -q https://github.com/VBWD-platform/vbwd-plugin-cms.git vbwd-backend/plugins/cms || true
+
       # ── 3. Style checks (black · flake8 · mypy) ───────────────────────────
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
